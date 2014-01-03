@@ -60,20 +60,9 @@ connection.write(notification.message)
 connection.close
 ```
 
-You can also pass this persistent connection to a client for it to use:
+## Versioning
 
-```ruby
-APN = Houston::Client.development
-APN.connection = connection
-
-# ...
-
-APN.push(notification)
-```
-
-Note: The client will open the connection if it's not open already, but it will not close the connection when it's finished. You have to do this yourself.
-
-
+Houston 2.0 supports the new [enhanced notification format](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/CommunicatingWIthAPS.html#//apple_ref/doc/uid/TP40008194-CH101-SW4). Support for the legacy notification format is available in 1.x releases.
 
 ## Command Line Tool
 
