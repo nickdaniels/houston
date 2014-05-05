@@ -21,6 +21,8 @@ Another caveat is that Houston doesn't manage device tokens for you. For that, y
 ## Usage
 
 ```ruby
+require 'houston'
+
 # Environment variables are automatically read, or can be overridden by any specified options. You can also
 # conveniently use `Houston::Client.development` or `Houston::Client.production`.
 APN = Houston::Client.development
@@ -58,6 +60,14 @@ notification.alert = "Hello, World!"
 connection.write(notification.message)
 
 connection.close
+```
+
+### Feedback Service
+
+Apple provides a feedback service to query for unregistered device tokens, these are devices that have failed to receive a push notification and should be removed from your application. You should periodically query for and remove these devices, Apple audits providers to ensure they are removing unregistered devices. To obtain the list of unregistered device tokens:
+
+```ruby
+Houston::Client.development.devices
 ```
 
 ## Versioning
