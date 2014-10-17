@@ -62,7 +62,7 @@ module Houston
 
           begin
             connection.write(notification.message)
-          rescue OpenSSL::SSL::SSLError, Errno::EPIPE
+          rescue OpenSSL::SSL::SSLError, Errno::EPIPE, Errno::ETIMEDOUT
             @retries += 1
             connection.close
 
