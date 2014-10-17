@@ -83,7 +83,7 @@ module Houston
         end
       end
       
-      notifications.select { |n| n.error }
+      notifications
     end
 
     def unregistered_devices
