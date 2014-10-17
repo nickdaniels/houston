@@ -82,6 +82,8 @@ module Houston
           end
         end
       end
+      
+      notifications.select { |n| n.error }
     end
 
     def unregistered_devices
