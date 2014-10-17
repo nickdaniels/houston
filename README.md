@@ -1,4 +1,4 @@
-![Houston](https://raw.github.com/mattt/nomad-cli.com/assets/houston-banner.png)
+![Houston](https://raw.github.com/nomad/nomad.github.io/assets/houston-banner.png)
 
 Push Notifications don't have to be difficult.
 
@@ -8,7 +8,7 @@ In a production application, you will probably want to schedule or queue notific
 
 Another caveat is that Houston doesn't manage device tokens for you. For that, you should check out [Helios](http://helios.io)
 
-> Houston's is named for [Houston, TX](http://en.wikipedia.org/wiki/Houston), the metonymical home of [NASA's Johnson Space Center](http://en.wikipedia.org/wiki/Lyndon_B._Johnson_Space_Center), as in _Houston, We Have Liftoff!_.
+> Houston is named for [Houston, TX](http://en.wikipedia.org/wiki/Houston), the metonymical home of [NASA's Johnson Space Center](http://en.wikipedia.org/wiki/Lyndon_B._Johnson_Space_Center), as in _Houston, We Have Liftoff!_.
 
 > It's part of a series of world-class command-line utilities for iOS development, which includes [Cupertino](https://github.com/mattt/cupertino) (Apple Dev Center management), [Shenzhen](https://github.com/mattt/shenzhen) (Building & Distribution), [Venice](https://github.com/mattt/venice) (In-App Purchase Receipt Verification), and [Dubai](https://github.com/mattt/dubai) (Passbook pass generation).
 
@@ -35,14 +35,32 @@ token = "<ce8be627 2e43e855 16033e24 b4c28922 0eeda487 9c477160 b2545e95 b68b596
 notification = Houston::Notification.new(device: token)
 notification.alert = "Hello, World!"
 
-# Notifications can also change the badge count, have a custom sound, indicate available Newsstand content, or pass along arbitrary data.
+# Notifications can also change the badge count, have a custom sound, have a category identifier, indicate available Newsstand content, or pass along arbitrary data.
 notification.badge = 57
 notification.sound = "sosumi.aiff"
+notification.category = "INVITE_CATEGORY"
 notification.content_available = true
 notification.custom_data = {foo: "bar"}
 
 # And... sent! That's all it takes.
 APN.push(notification)
+```
+
+### Error Handling
+
+If an error occurs when sending a particular notification, its `error` attribute will be populated:
+
+```ruby
+puts "Error: #{notification.error}." if notification.error
+```
+
+### Silent Notifications
+
+To send a silent push notification, set `sound` to an empty string (`''`):
+
+```ruby
+Houston::Notification.new(:sound => '',
+                          :content_available => true)
 ```
 
 ### Persistent Connections
@@ -52,7 +70,7 @@ If you want to manage your own persistent connection to Apple push services, suc
 ```ruby
 certificate = File.read("/path/to/apple_push_notification.pem")
 passphrase = "..."
-connection = Houston::Connection.new(APPLE_DEVELOPMENT_GATEWAY_URI, certificate, passphrase)
+connection = Houston::Connection.new(Houston::APPLE_DEVELOPMENT_GATEWAY_URI, certificate, passphrase)
 connection.open
 
 notification = Houston::Notification.new(device: token)

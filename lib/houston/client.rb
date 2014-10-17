@@ -29,7 +29,7 @@ module Houston
       @feedback_uri = ENV['APN_FEEDBACK_URI']
       @certificate = ENV['APN_CERTIFICATE']
       @passphrase = ENV['APN_CERTIFICATE_PASSPHRASE']
-      @timeout = ENV['APN_TIMEOUT'] || 0.5
+      @timeout = Float(ENV['APN_TIMEOUT'] || 0.5)
       @max_retries = ENV['APN_MAX_RETRIES'] || 3
       @retries = 0
     end
@@ -49,7 +49,6 @@ module Houston
       return if notifications.empty?
 
       notifications.flatten!
-      error = nil
 
       connect(@gateway_uri) do |connection|
         ssl = connection.ssl
@@ -73,45 +72,35 @@ module Houston
 
           notification.mark_as_sent!
 
-          break if notifications.count == 1 || notification == notifications.last
-
           read_socket, write_socket = IO.select([ssl], [ssl], [ssl], nil)
           if (read_socket && read_socket[0])
-            error = connection.read(6)
-            break
+            if error = connection.read(6)
+              command, status, index = error.unpack("ccN")
+              notification.apns_error_code = status
+              notification.mark_as_unsent!
+            end
           end
         end
-
-        return if notifications.count == 1
-
-        unless error
-          read_socket, write_socket = IO.select([ssl], nil, [ssl], timeout)
-          if (read_socket && read_socket[0])
-            error = connection.read(6)
-          end
-        end
-      end
-
-      if error
-        command, status, index = error.unpack("ccN")
-        notifications.slice!(0..index)
-        notifications.each(&:mark_as_unsent!)
-        push(*notifications)
       end
     end
 
-    def devices
+    def unregistered_devices
       devices = []
 
       connect(@feedback_uri) do |connection|
         while line = connection.read(38)
           feedback = line.unpack('N1n1H140')
+          timestamp = feedback[0]
           token = feedback[2].scan(/.{0,8}/).join(' ').strip
-          devices << token if token
+          devices << {token: token, timestamp: timestamp} if token && timestamp
         end
       end
 
       devices
+    end
+
+    def devices
+      unregistered_devices.collect{|device| device[:token]}
     end
   end
 end
